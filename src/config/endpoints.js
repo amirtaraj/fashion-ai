@@ -1,2 +1,2 @@
 // API endpoints config
-export const BASE_URL = 'https://notification-communicate-surround-oven.trycloudflare.com/';
+export const BASE_URL = 'https://abilities-commodity-classes-wing.trycloudflare.com/';

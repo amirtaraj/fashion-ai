@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { fetchInventoryAnalysis } from '../config/analysisApi';
+import { fetchInventorySamples } from '../config/analysisApi';
 import { mockAlertData } from '../data/alertMockData';
 import Paper from '@mui/material/Paper'
 import Box from '@mui/material/Box'
@@ -7,12 +7,20 @@ import Typography from '@mui/material/Typography'
 import Chip from '@mui/material/Chip'
 import CircularProgress from '@mui/material/CircularProgress'
 
-export default function ActivityAlerts() {
+export default function ActivityAlerts({ initialAlerts = null }) {
   const [alerts, setAlerts] = useState({ low: [], defective: [], overstock: [] });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchInventoryAnalysis({ low: 5, high: 500 })
+    // If owner provided initial alerts (prefetch), use them and skip fetching
+    if (initialAlerts && typeof initialAlerts === 'object') {
+      setAlerts(initialAlerts);
+      setLoading(false);
+      return;
+    }
+
+    // Otherwise fetch alerts on mount from the inventory samples endpoint
+    fetchInventorySamples({ low: 5, high: 500 })
       .then(data => {
         setAlerts({
           low: Array.isArray(data?.low_stock_items) ? data.low_stock_items : mockAlertData.low_stock_items,
@@ -20,7 +28,8 @@ export default function ActivityAlerts() {
           overstock: Array.isArray(data?.high_stock_items) ? data.high_stock_items : mockAlertData.high_stock_items
         });
       })
-      .catch(() => {
+      .catch((err) => {
+        console.warn('fetchInventorySamples failed, using mock alerts', err && err.message);
         setAlerts({
           low: mockAlertData.low_stock_items,
           defective: mockAlertData.defective_items,
@@ -28,7 +37,7 @@ export default function ActivityAlerts() {
         });
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [initialAlerts]);
 
   if (loading) return (
     <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
