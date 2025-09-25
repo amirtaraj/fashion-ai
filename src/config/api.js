@@ -1,6 +1,5 @@
 import axios from 'axios'
-
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
+import { BASE_URL } from './endpoints'
 
 const client = axios.create({
   baseURL: BASE_URL,
@@ -14,7 +13,8 @@ export async function searchText(query) {
     return res.data
   } catch (err) {
     console.warn('searchText failed', err.message)
-  return { results: [], recommendations: [] }
+    const { mockResults } = await import('../data/mockData')
+    return { results: mockResults, recommendations: mockResults.slice(0,3) }
   }
 }
 
@@ -23,13 +23,14 @@ export async function searchImage(file) {
   try {
     const fd = new FormData()
     fd.append('file', file)
-    const res = await axios.post((BASE_URL || '') + '/search/image', fd, {
+    const res = await axios.post((BASE_URL || '') + 'search/image', fd, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
     return res.data
   } catch (err) {
     console.warn('searchImage failed', err.message)
-  return { results: [], recommendations: [] }
+    const { mockResults } = await import('../data/mockData')
+    return { results: mockResults, recommendations: mockResults.slice(0,3) }
   }
 }
 
@@ -55,4 +56,4 @@ export async function getInventory(product_id) {
   }
 }
 
-export { BASE_URL }
+// (BASE_URL is exported from ./endpoints.js)
